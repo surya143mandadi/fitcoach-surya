@@ -62,7 +62,10 @@ export interface WorkoutSession {
   week: number               // program week 1-12
   exercises: ExerciseLog[]
   completedPct: number
+  startedAt?: string         // ISO timestamp when session began
   finishedAt?: string
+  durationSec?: number       // active session length in seconds
+  kcalBurned?: number        // MET-based energy estimate at finish
 }
 
 // ---- Transformation / body metrics ----

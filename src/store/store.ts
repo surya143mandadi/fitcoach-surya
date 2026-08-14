@@ -83,6 +83,7 @@ export const useApp = create<AppState>()(
           id: `${dateISO}-${day}-${Date.now()}`,
           day, title: tpl.title, dateISO,
           week: programWeek(dateISO),
+          startedAt: new Date().toISOString(),
           exercises: tpl.blocks.map(b => ({
             exerciseId: b.exerciseId,
             sets: Array.from({ length: b.plan.sets }, () => ({ weight: 0, reps: 0, done: false }))
@@ -153,3 +154,8 @@ export function weeklyWeightAvg(body: BodyEntry[], refISO = todayISO()): number 
 }
 
 export { NUTRITION_TARGETS }
+
+export function currentBodyWeightKg(body: BodyEntry[], fallback = 74): number {
+  const withW = body.filter(b => b.weightKg != null)
+  return withW.length ? (withW[withW.length - 1].weightKg as number) : fallback
+}

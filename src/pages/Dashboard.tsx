@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react'
-import { useApp, nutritionFor, weeklyWeightAvg, NUTRITION_TARGETS } from '../store/store'
+import { useApp, nutritionFor, weeklyWeightAvg, currentBodyWeightKg, NUTRITION_TARGETS } from '../store/store'
 import { BASELINE_SCAN, PROFILE } from '../data/baseline'
 import { getExercise } from '../data/exercises'
-import { todayISO, fmtDate } from '../lib/dates'
+import { todayISO, fmtDate, weekStartISO } from '../lib/dates'
+import { estimateSessionKcal, fmtDuration } from '../lib/calories'
 import { ProgressRing, Bar, Stat, Section } from '../components/ui'
 import type { BodyEntry } from '../types'
 
@@ -21,6 +22,15 @@ export default function Dashboard() {
   const lostPct = Math.min(100, Math.max(0, ((startW - curW) / (startW - goalW)) * 100))
   const n = nutritionFor(today, nutrition)
   const workoutsDone = sessions.filter(s => (s.completedPct ?? 0) >= 60).length
+
+  const bw = currentBodyWeightKg(body)
+  const kcalOf = (s: typeof sessions[number]) => s.kcalBurned ?? estimateSessionKcal(s, bw)
+  const wkStart = weekStartISO(today)
+  const kcalToday = sessions.filter(s => s.dateISO === today).reduce((a, s) => a + kcalOf(s), 0)
+  const kcalWeek = sessions.filter(s => weekStartISO(s.dateISO) === wkStart).reduce((a, s) => a + kcalOf(s), 0)
+  const todaySteps = n.steps || 0
+  const stepPct = Math.min(100, Math.round((todaySteps / PROFILE.stepGoal) * 100))
+  const recentSessions = [...sessions].filter(s => s.finishedAt).sort((a, b) => b.dateISO.localeCompare(a.dateISO)).slice(0, 4)
 
   // avg steps over last 7 logged days
   const stepDays = nutrition.filter(x => x.steps != null).slice(-7)
@@ -76,6 +86,28 @@ export default function Dashboard() {
         <Stat label="Avg steps" value={avgSteps ?? '—'} sub={`goal ${PROFILE.stepGoal}`} />
         <Stat label="Body fat" value={BASELINE_SCAN.bodyFatPct} unit="%" sub={`goal ${PROFILE.goalBodyFatPct}%`} />
       </div>
+
+      {/* Activity: steps + calories burned */}
+      <Section title="Activity">
+        <div className="card flex items-center gap-5">
+          <ProgressRing pct={stepPct} size={84} stroke={8} label={`${stepPct}%`} />
+          <div className="flex-1 space-y-1.5">
+            <div className="flex justify-between text-sm"><span className="text-muted">Steps today</span><span className="font-bold">{todaySteps.toLocaleString()} / {PROFILE.stepGoal.toLocaleString()}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted">🔥 Burned today</span><span className="font-bold text-amber-400">{kcalToday} kcal</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted">Burned this week</span><span className="font-semibold">{kcalWeek} kcal</span></div>
+          </div>
+        </div>
+        {recentSessions.length > 0 && (
+          <div className="card mt-3 divide-y divide-line">
+            {recentSessions.map(s => (
+              <div key={s.id} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                <div><div className="font-semibold text-sm">{s.title}</div><div className="text-xs text-muted">{fmtDate(s.dateISO)}{s.durationSec ? ` · ${fmtDuration(s.durationSec)}` : ''}</div></div>
+                <div className="text-right"><div className="text-brand font-bold">{kcalOf(s)} kcal</div><div className="text-xs text-muted">{s.completedPct}% done</div></div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Section>
 
       {/* Today intake */}
       <Section title="Today's intake">

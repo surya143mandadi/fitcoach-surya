@@ -1,18 +1,19 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import type { DayKey, WorkoutSession as WS, SetLog } from '../types'
 import { WORKOUTS } from '../data/program'
 import { getExercise } from '../data/exercises'
-import { useApp } from '../store/store'
+import { useApp, currentBodyWeightKg } from '../store/store'
 import { todayISO, programWeek, fmtDate } from '../lib/dates'
 import { overloadAdvice, lastLogFor, sessionCompletion } from '../lib/progression'
 import { RestTimer } from '../components/RestTimer'
+import { estimateSessionKcal, fmtDuration } from '../lib/calories'
 import { ProgressRing, VideoArea } from '../components/ui'
 
 export default function WorkoutSession() {
   const { day } = useParams<{ day: DayKey }>()
   const nav = useNavigate()
-  const { sessions, startOrGetSession, saveSession } = useApp()
+  const { sessions, startOrGetSession, saveSession, body } = useApp()
   const dayKey = (day as DayKey) || 'thu'
   const tpl = WORKOUTS[dayKey]
   const dateISO = todayISO()
@@ -20,6 +21,17 @@ export default function WorkoutSession() {
   const [session, setSession] = useState<WS>(() => startOrGetSession(dayKey, dateISO))
   const [restSec, setRestSec] = useState<number | null>(null)
   const [openIdx, setOpenIdx] = useState(0)
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    const start = session.startedAt ? new Date(session.startedAt).getTime() : Date.now()
+    const tick = () => setElapsed(Math.floor((Date.now() - start) / 1000))
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [session.startedAt])
+
+  const liveKcal = estimateSessionKcal({ ...session, durationSec: elapsed }, currentBodyWeightKg(body))
 
   const plannedSetsById = useMemo(() => {
     const m: Record<string, number> = {}
@@ -45,7 +57,10 @@ export default function WorkoutSession() {
   }
 
   function finish() {
-    update({ ...session, finishedAt: new Date().toISOString() })
+    const start = session.startedAt ? new Date(session.startedAt).getTime() : Date.now()
+    const durationSec = Math.max(0, Math.floor((Date.now() - start) / 1000))
+    const withEnd = { ...session, finishedAt: new Date().toISOString(), durationSec }
+    update({ ...withEnd, kcalBurned: estimateSessionKcal(withEnd, currentBodyWeightKg(body)) })
     nav('/dashboard')
   }
 
@@ -59,6 +74,17 @@ export default function WorkoutSession() {
         </div>
         <ProgressRing pct={completion} size={52} stroke={6} />
       </div>
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="card py-3 flex items-center gap-3">
+          <span className="text-xl">⏱</span>
+          <div><div className="label">Duration</div><div className="text-lg font-bold tabular-nums">{fmtDuration(elapsed)}</div></div>
+        </div>
+        <div className="card py-3 flex items-center gap-3">
+          <span className="text-xl">🔥</span>
+          <div><div className="label">Est. burn</div><div className="text-lg font-bold">{liveKcal} <span className="text-xs text-muted">kcal</span></div></div>
+        </div>
+      </div>
+
 
       <div className="space-y-3">
         {tpl.blocks.map((b, idx) => {
