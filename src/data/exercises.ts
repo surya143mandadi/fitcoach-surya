@@ -335,5 +335,45 @@ export const EXERCISES: Record<string, Exercise> = {
   }
 }
 
+
+// Verified demonstration videos (YouTube). Sourced via search + oEmbed verification.
+const VIDEOS: Record<string, string> = {
+  pushup: 'https://www.youtube.com/watch?v=I9fsqKE5XHo',
+  incline_pushup: 'https://www.youtube.com/watch?v=mt8NHxx7dVc',
+  machine_chest_press: 'https://www.youtube.com/watch?v=Qu7-ceCvq7w',
+  goblet_squat: 'https://www.youtube.com/watch?v=lRYBbchqxtI',
+  bodyweight_squat: 'https://www.youtube.com/watch?v=I7Nk1RMtcLs',
+  db_rdl: 'https://www.youtube.com/watch?v=hQgFixeXdZo',
+  band_row: 'https://www.youtube.com/watch?v=hqFwwv6dFGY',
+  assisted_pullup: 'https://www.youtube.com/watch?v=gx0RWT7WbmA',
+  seated_shoulder_machine: 'https://www.youtube.com/watch?v=6v4nrRVySj0',
+  static_split_squat: 'https://www.youtube.com/watch?v=hiLF_pF3EJM',
+  lying_leg_raise: 'https://www.youtube.com/watch?v=2wUpI98Ix-k',
+  hip_hinge_drill: 'https://www.youtube.com/watch?v=s7PsLZ8Fi_E',
+  barbell_bench: 'https://www.youtube.com/watch?v=hWbUlkb5Ms4',
+  incline_db_press: 'https://www.youtube.com/watch?v=8fXfwG4ftaQ',
+  lat_pulldown: 'https://www.youtube.com/watch?v=bNmvKpJSWKM',
+  seated_cable_row: 'https://www.youtube.com/watch?v=qD1WZ5pSuvk',
+  db_shoulder_press: 'https://www.youtube.com/watch?v=k6tzKisR3NY',
+  db_lateral_raise: 'https://www.youtube.com/watch?v=Kl3LEzQ5Zqs',
+  triceps_pushdown: 'https://www.youtube.com/watch?v=1FjkhpZsaxc',
+  db_biceps_curl: 'https://www.youtube.com/watch?v=MKWBV29S6c0',
+  back_squat: 'https://www.youtube.com/watch?v=dW3zj79xfrc',
+  romanian_deadlift: 'https://www.youtube.com/watch?v=5rIqP63yWFg',
+  leg_press: 'https://www.youtube.com/watch?v=nDh_BlnLCGc',
+  walking_lunge: 'https://www.youtube.com/watch?v=mJilHWIBWO8',
+  leg_curl: 'https://www.youtube.com/watch?v=xdbEG3xGLI8',
+  standing_calf_raise: 'https://www.youtube.com/watch?v=fZYTVO9-Ggk',
+  plank: 'https://www.youtube.com/watch?v=A2b2EmIg0dA',
+  hanging_leg_raise: 'https://www.youtube.com/watch?v=2n4UqRIJyk4',
+  cable_woodchop: 'https://www.youtube.com/watch?v=90Qh5XG6mqs',
+  deadlift: 'https://www.youtube.com/watch?v=ZaTM37cfiDs',
+  db_bench: 'https://www.youtube.com/watch?v=mTaiQemkEpU',
+  one_arm_db_row: 'https://www.youtube.com/watch?v=i9BJwVCK5VQ',
+  overhead_press: 'https://www.youtube.com/watch?v=zoN5EH50Dro',
+  kb_swing: 'https://www.youtube.com/watch?v=n1df4ASFeZU',
+}
+for (const [id, url] of Object.entries(VIDEOS)) { if (EXERCISES[id]) EXERCISES[id].videoUrl = url }
+
 export const EXERCISE_LIST: Exercise[] = Object.values(EXERCISES)
 export function getExercise(id: string): Exercise | undefined { return EXERCISES[id] }

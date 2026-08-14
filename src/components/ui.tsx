@@ -62,18 +62,39 @@ export function BackHeader({ title, subtitle }: { title: string; subtitle?: stri
 }
 
 export function VideoArea({ url, name }: { url?: string; name: string }) {
+  const yt = url ? (url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/) || [])[1] : undefined
+  if (yt) {
+    return (
+      <div>
+        <div className="rounded-2xl overflow-hidden bg-black border border-line aspect-video">
+          <iframe
+            className="w-full h-full"
+            src={`https://www.youtube-nocookie.com/embed/${yt}?rel=0&modestbranding=1&playsinline=1`}
+            title={`${name} demonstration`}
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+        <a href={`https://www.youtube.com/watch?v=${yt}`} target="_blank" rel="noreferrer"
+          className="block text-center text-xs text-muted mt-1.5">Open demonstration on YouTube</a>
+      </div>
+    )
+  }
+  if (url) {
+    return (
+      <div className="rounded-2xl overflow-hidden bg-black border border-line aspect-video flex items-center justify-center">
+        <video src={url} controls playsInline className="w-full h-full object-contain" />
+      </div>
+    )
+  }
   return (
     <div className="rounded-2xl overflow-hidden bg-black border border-line aspect-video flex items-center justify-center">
-      {url ? (
-        <video src={url} controls playsInline className="w-full h-full object-contain" />
-      ) : (
-        <div className="text-center px-4">
-          <div className="text-5xl mb-2">▶</div>
-          <div className="text-sm font-semibold">Demonstration video</div>
-          <div className="text-xs text-muted mt-1">{name}</div>
-          <div className="text-[11px] text-muted mt-2">Drop a clip into this exercise to play it here.</div>
-        </div>
-      )}
+      <div className="text-center px-4">
+        <div className="text-5xl mb-2">▶</div>
+        <div className="text-sm font-semibold">Demonstration video</div>
+        <div className="text-xs text-muted mt-1">{name}</div>
+      </div>
     </div>
   )
 }
